@@ -1,0 +1,339 @@
+---
+output: 
+  github_document:
+    toc: TRUE
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "50%"
+)
+options(tidyverse.quiet = TRUE)
+
+package_exists <- F
+print_reports <- F
+build_package <- F
+build_package_w_readme <- F
+
+print_reports_action <- ifelse(print_reports, "asis", "hide")
+```
+
+# {vizbroom}
+
+
+
+## Installation
+
+You can install the development version of vizbroom from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("EvaMaeRey/vizbroom")
+```
+
+## User interface idea... 
+
+
+
+```{r example, eval = package_exists}
+library(ggplot2) 
+library(ggbroom)
+
+visbroom(data = ?, formula = ?, method = ?) + 
+  viz_glance()
+
+visbroom(data = ?, formula = ?, method = ?) + 
+  viz_tidy()
+
+visbroom(data = ?, formula = ?, method = ?) + 
+  viz_tidy_stdz()
+
+visbroom(data = ?, formula = ?, method = ? ) + 
+  viz_augment()
+
+visbroom(data = ?, formula = ?, method = ? ) + 
+  viz_augment_stdz()
+```
+
+
+
+```{r}
+```
+
+ 
+
+
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+# How we built this functionality
+
+
+
+## Step 0. Build vis with base ggplot2 and broom
+
+
+
+```{r}
+library(broom)
+# glance
+# augment
+# tidy
+stdz <- function(x){
+  
+  (x - mean(x))/sd(x)
+  
+}
+
+m <- lm(dist ~ speed, data = cars)
+
+
+
+
+
+glance(m) 
+tidy(m)
+augment(m) |> head()
+
+
+library(ggplot2)
+library(magrittr)
+
+glance(m) %>%  
+  tidyr::pivot_longer(cols = 1:length(.)) %>% 
+  dplyr::mutate(which = dplyr::row_number()) %>% 
+ggplot(data = .) + 
+  aes(x = 0, y = which) + 
+  geom_text(aes(label = name), hjust = 0 ) + 
+  geom_text(aes(label = value, x = 1), hjust = 1)
+
+tidy(m) |>
+  ggplot() + 
+  aes(y = term, x = estimate) + 
+  geom_point() + 
+  geom_segment(aes(x = estimate + std.error,
+                   xend = estimate - std.error,
+                   yend = term))
+
+lm(stdz(dist) ~ stdz(speed), data = cars) |>
+ tidy() |>
+  ggplot() + 
+  aes(y = term, x = estimate) + 
+  geom_point() + 
+  geom_segment(aes(x = estimate + std.error,
+                   xend = estimate - std.error,
+                   yend = term))
+
+
+ggplot(data = augment(m)) + 
+  aes(x = speed, y = dist) + 
+  geom_point() + 
+  geom_point(aes(y = .fitted), color = "blue")
+
+
+
+```
+
+
+
+# Write functions w/ 'recipe' substeps: 1. compute_?; 2. define ggproto; 3. write geom_*; 4. test.
+
+## Write `geom_county()` (polygon)
+
+```{r geom_county}
+################# Step 1. Compute panel function ###########
+
+###### Step 2. Specify ggproto ###############
+
+########### Step 3. geom function, inherits from sf ##################
+
+
+```
+
+
+## try it out..
+
+```{r}
+
+```
+
+
+
+```{r, echo = F}
+if(!build_package_w_readme){knitr::knit_exit()}
+```
+
+# Part 2. Packaging and documentation  🚧 ✅ 
+
+## minimal requirements for github package.  Have you:
+
+### Created files for package archetecture with `devtools::create("./ggbarlabs")` ✅ 
+
+### Moved functions R folder? ✅  
+
+
+
+```{r}
+library(readme2pkg)
+chunk_to_r("data")
+chunk_to_r("geom_county")
+chunk_to_r("geom_county_labels")
+chunk_to_r("stamp_county")
+chunk_to_r("stamp_roads")
+```
+
+
+### Added roxygen skeleton? ✅ 
+
+ for auto documentation and making sure proposed functions are *exported*
+
+### Managed dependencies ? ✅ 
+
+package dependencies managed, i.e. `depend::function()` in proposed functions and declared in the DESCRIPTION
+
+### Chosen a license? ✅ 
+
+
+```{r, eval = F}
+usethis::use_package("ggplot2")
+usethis::use_mit_license()
+```
+
+### Run `devtools::check()` and addressed errors? ✅ 
+
+
+## Listen 🚧 
+
+### Consulted with potential users 🚧 
+### Consulted with technical experts 
+
+Getting started with that!
+
+## Polish.  Have you...
+
+### Settled on examples and put them in the roxygen skeleton? 🚧 
+
+### Written formal tests of functions? 🚧 
+
+
+### Sent tests in this readme to package via readme2pkg 🚧 
+
+That would look like this...
+
+```
+chunk_to_tests_testthat("test_geom_barlab_count")
+```
+
+
+### Have you worked added a description and author information in the DESCRIPTION file? 🚧 
+
+### Addressed *all* notes, warnings and errors. 🚧 
+
+## Promote
+
+### Package website built? 🚧 
+
+### Package website deployed? 🚧 
+
+## Harden
+
+### Submit to CRAN?  🚧 
+
+
+# Reports, Environment
+
+## Description file extract
+
+```{r}
+
+```
+
+## Environment
+
+Here I just want to print the packages and the versions
+
+```{r}
+all <- sessionInfo() |> print() |> capture.output()
+all[11:17]
+
+
+```
+
+## `devtools::check()` report
+
+```{r, error = T, results = print_reports_action}
+# rm(list = c("geom_barlab_count", "geom_barlab_count_percent"))
+devtools::check(pkg = ".")
+```
+
+
+
+
+
+# Install development package with `devtools::build()`
+
+```{r, error = T, eval = build_package, results = print_reports_action}
+devtools::build()
+```
+
+
+
+## Repo Directory and files report
+
+Let's look at the repository contents. 
+
+```{r}
+fs::dir_tree(recurse = T)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+#############
+
+### Changing context
+
+Here is a suggested preparation for a package for allowing for ggbrasilstates easy creation of brazilian state choropleth, reading in an sf states object from the geombr package.
+
+```
+brasil_state_sf <- geobr::read_state() %>%
+  rename(state_code = code_state,
+         state_abb = abbrev_state,
+         state = name_state,
+         region_code = code_region,
+         region = name_region,
+         geometry = geom)# year 2010
+```         
+
+Then a number of changes would need to be made to update the DATASET.R file, including object names.  Also notably there are quite a few columns that are ID columns compared to the North Carolina case. 
+
+Find and change can be used for object name changes.
+
+```
+id_cols = c(county_name, fips) -> id_cols = c(state_code, state_abb, state, region_code, region)
+county -> state
+northcarolina -> brasil
+```
+
+
+For ggbrasil in these files changes should be made:
+
+```
+County -> State
+```
+
+New examples should be crafted.
